@@ -12,6 +12,16 @@ type CulvertScoreRow = {
   culvert: string;
 };
 
+function normalizeDateLabel(raw: string) {
+  const text = raw.trim();
+  const match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/);
+  if (!match) return text;
+  const month = String(Number(match[1]));
+  const day = String(Number(match[2]));
+  const year = String(Number(match[3])).padStart(2, "0");
+  return `${month}/${day}/${year}`;
+}
+
 function normalizeName(raw: string) {
   return raw.trim().replace(/\s+/g, " ").toLocaleLowerCase();
 }
@@ -96,10 +106,11 @@ export async function upsertCulvertScoresByName(config: SheetsConfig, dateLabel:
   if (!values[0][0]) values[0][0] = "Name";
 
   const header = values[0];
-  let dateCol = header.findIndex((v) => v === dateLabel);
+  const normalizedInputDate = normalizeDateLabel(dateLabel);
+  let dateCol = header.findIndex((v) => normalizeDateLabel(String(v ?? "")) === normalizedInputDate);
   if (dateCol === -1) {
     dateCol = Math.max(1, header.length);
-    header[dateCol] = dateLabel;
+    header[dateCol] = normalizedInputDate;
     values[0] = header;
   }
 
@@ -133,7 +144,7 @@ export async function upsertCulvertScoresByName(config: SheetsConfig, dateLabel:
   });
   updates.push({
     range: `${config.sheetName}!${columnLabel(dateCol + 1)}1`,
-    values: [[dateLabel]],
+    values: [[normalizedInputDate]],
   });
   updates.push({
     range: `${config.sheetName}!A2:A${names.length + 1}`,
