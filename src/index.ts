@@ -17,7 +17,7 @@ for (const key of requiredEnv) {
 }
 
 const prefix = process.env.BOT_PREFIX ?? "!";
-const uploadRoleId = "1104875914522808360";
+const uploadRoleId = "1164368261337579622";
 const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
 const n8nBasicAuthUsername = process.env.N8N_BASIC_AUTH_USERNAME;
 const n8nBasicAuthPassword = process.env.N8N_BASIC_AUTH_PASSWORD;
