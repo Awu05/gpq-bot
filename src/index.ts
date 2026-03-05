@@ -17,7 +17,7 @@ for (const key of requiredEnv) {
 }
 
 const prefix = process.env.BOT_PREFIX ?? "!";
-const uploadRoleId = "1164368261337579622";
+const uploadRoleIds = ["1478971528732344430"];
 const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL;
 const n8nBasicAuthUsername = process.env.N8N_BASIC_AUTH_USERNAME;
 const n8nBasicAuthPassword = process.env.N8N_BASIC_AUTH_PASSWORD;
@@ -38,6 +38,13 @@ const client = new Client({
 
 function isCommand(message: Message, command: string) {
   return message.content.startsWith(`${prefix}${command}`);
+}
+
+function hasUploadAccess(message: Message) {
+  if (!message.inGuild() || !message.member?.roles || !("cache" in message.member.roles)) {
+    return false;
+  }
+  return uploadRoleIds.some((roleId) => message.member!.roles.cache.has(roleId));
 }
 
 function isValidDateParts(year: number, month: number, day: number) {
@@ -374,7 +381,7 @@ client.on("messageCreate", async (message) => {
         return;
       }
 
-      if (!message.member.roles.cache.has(uploadRoleId)) {
+      if (!hasUploadAccess(message)) {
         await message.reply("You do not have permission to use this command.");
         return;
       }
@@ -471,7 +478,7 @@ client.on("messageCreate", async (message) => {
         await message.reply("This command can only be used in a server.");
         return;
       }
-      if (!message.member.roles.cache.has(uploadRoleId)) {
+      if (!hasUploadAccess(message)) {
         await message.reply("You do not have permission to use this command.");
         return;
       }
