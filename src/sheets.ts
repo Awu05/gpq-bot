@@ -159,3 +159,51 @@ export async function upsertCulvertScoresByName(config: SheetsConfig, dateLabel:
     },
   });
 }
+
+export async function fillEmptyCulvertCells(config: SheetsConfig) {
+  const sheets = getSheetsApi(config);
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: config.spreadsheetId,
+    range: `${config.sheetName}!A1:ZZZ`,
+  });
+
+  const values = response.data.values ?? [];
+  if (values.length < 2) return { updated: 0, range: `${config.sheetName}!B2` };
+
+  const header = values[0] ?? [];
+  const lastCol = header.length;
+  const lastRow = values.length;
+  if (lastCol < 2 || lastRow < 2) return { updated: 0, range: `${config.sheetName}!B2` };
+
+  const scoreGrid: string[][] = [];
+  let updated = 0;
+
+  for (let r = 1; r < lastRow; r++) {
+    const row = values[r] ?? [];
+    const out: string[] = [];
+    for (let c = 1; c < lastCol; c++) {
+      const cell = row[c];
+      const text = cell == null ? "" : String(cell).trim();
+      if (text === "") {
+        out.push("0");
+        updated += 1;
+      } else {
+        out.push(String(cell));
+      }
+    }
+    scoreGrid.push(out);
+  }
+
+  if (updated === 0) return { updated: 0, range: `${config.sheetName}!B2` };
+
+  const endCol = columnLabel(lastCol);
+  const targetRange = `${config.sheetName}!B2:${endCol}${lastRow}`;
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: config.spreadsheetId,
+    range: targetRange,
+    valueInputOption: "USER_ENTERED",
+    requestBody: { values: scoreGrid },
+  });
+
+  return { updated, range: targetRange };
+}

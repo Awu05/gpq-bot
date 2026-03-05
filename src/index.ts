@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { AttachmentBuilder, Client, GatewayIntentBits, Message } from "discord.js";
 import { sendImagesToN8n } from "./n8n.js";
-import { readRows, SheetsConfig, upsertCulvertScoresByName } from "./sheets.js";
+import { fillEmptyCulvertCells, readRows, SheetsConfig, upsertCulvertScoresByName } from "./sheets.js";
 
 const requiredEnv = [
   "DISCORD_TOKEN",
@@ -532,6 +532,25 @@ client.on("messageCreate", async (message) => {
       return;
     }
 
+    if (isCommand(message, "fillinempty")) {
+      if (!message.inGuild() || !message.member?.roles || !("cache" in message.member.roles)) {
+        await message.reply("This command can only be used in a server.");
+        return;
+      }
+      if (!hasUploadAccess(message)) {
+        await message.reply("You do not have permission to use this command.");
+        return;
+      }
+
+      const result = await fillEmptyCulvertCells(sheetsConfig);
+      await message.reply(
+        result.updated > 0
+          ? `Done. Filled ${result.updated} empty score cell(s) with 0 in range ${result.range}.`
+          : "No empty score cells were found.",
+      );
+      return;
+    }
+
     if (isCommand(message, "cumulative")) {
       const rows = await readRows(sheetsConfig, "A1:ZZ");
       if (rows.length < 2) {
@@ -660,6 +679,7 @@ client.on("messageCreate", async (message) => {
           `Commands:`,
           `- ${prefix}upload MM/DD/YY (attach image(s) to the same message)`,
           `- ${prefix}manualupload MM/DD/YY <json>`,
+          `- ${prefix}fillinempty`,
           `- ${prefix}getuser <username>`,
           `- ${prefix}compare <user1>|<user2>`,
           `- ${prefix}cumulative`,
