@@ -677,12 +677,12 @@ client.on("messageCreate", async (message) => {
       await message.reply(
         [
           `Commands:`,
-          `- ${prefix}upload MM/DD/YY (attach image(s) to the same message)`,
-          `- ${prefix}manualupload MM/DD/YY <json>`,
-          `- ${prefix}fillinempty`,
-          `- ${prefix}getuser <username>`,
-          `- ${prefix}compare <user1>|<user2>`,
-          `- ${prefix}cumulative`,
+          `- ${prefix}upload MM/DD/YY (attach image(s)): OCR images via n8n and write scores to the sheet.`,
+          `- ${prefix}manualupload MM/DD/YY <json>: manually write name/culvert JSON rows to the sheet.`,
+          `- ${prefix}fillinempty: fill empty score cells with 0.`,
+          `- ${prefix}getuser <username>: generate a progression chart for one user.`,
+          `- ${prefix}compare <user1>|<user2>: generate a comparison chart for two users.`,
+          `- ${prefix}cumulative: chart weekly total scores across all users.`,
         ].join("\n"),
       );
     }
