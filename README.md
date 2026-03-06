@@ -4,9 +4,9 @@
 - `!upload MM/DD/YY` sends attached images to n8n and writes parsed rows.
 - `!manualupload MM/DD/YY <json>` writes manual `name/culvert` JSON rows to sheets.
 - `!fillinempty` fills blank score cells in the sheet with `0`.
-- `!getuser <username>` builds a progression line graph from Google Sheet scores and returns it as an image.
-- `!compare <user1>|<user2>` plots both users on one line graph and returns a PNG.
-- `!cumulative` sums each week/date column and returns a line-chart PNG of totals.
+- `!getuser <username>` builds a progression bar chart from Google Sheet scores and returns it as an image.
+- `!compare <user1>|<user2>` plots both users on one bar chart and returns a PNG.
+- `!cumulative` sums each week/date column and returns a bar-chart PNG of totals.
 
 ## 1) Create a Discord bot
 1. Go to Discord Developer Portal: https://discord.com/developers/applications

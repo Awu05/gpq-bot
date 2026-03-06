@@ -187,7 +187,7 @@ function parseSheetDate(raw: string) {
 
 async function buildUserProgressChart(username: string, labels: string[], values: number[]) {
   const chartConfig = {
-    type: "line",
+    type: "bar",
     data: {
       labels,
       datasets: [
@@ -198,8 +198,7 @@ async function buildUserProgressChart(username: string, labels: string[], values
           backgroundColor: "rgba(47, 128, 237, 0.15)",
           pointRadius: 3,
           pointHoverRadius: 4,
-          fill: false,
-          tension: 0.25,
+          borderWidth: 1,
         },
       ],
     },
@@ -240,7 +239,7 @@ async function buildCompareChart(
   valuesB: Array<number | null>,
 ) {
   const chartConfig = {
-    type: "line",
+    type: "bar",
     data: {
       labels,
       datasets: [
@@ -249,18 +248,14 @@ async function buildCompareChart(
           data: valuesA,
           borderColor: "#2f80ed",
           backgroundColor: "rgba(47, 128, 237, 0.15)",
-          pointRadius: 3,
-          fill: false,
-          tension: 0.25,
+          borderWidth: 1,
         },
         {
           label: `${userB} Culvert`,
           data: valuesB,
           borderColor: "#eb5757",
           backgroundColor: "rgba(235, 87, 87, 0.15)",
-          pointRadius: 3,
-          fill: false,
-          tension: 0.25,
+          borderWidth: 1,
         },
       ],
     },
@@ -288,7 +283,7 @@ async function buildCompareChart(
 
 async function buildCumulativeChart(labels: string[], values: number[]) {
   const chartConfig = {
-    type: "line",
+    type: "bar",
     data: {
       labels,
       datasets: [
@@ -297,9 +292,7 @@ async function buildCumulativeChart(labels: string[], values: number[]) {
           data: values,
           borderColor: "#27ae60",
           backgroundColor: "rgba(39, 174, 96, 0.15)",
-          pointRadius: 3,
-          fill: false,
-          tension: 0.25,
+          borderWidth: 1,
         },
       ],
     },
