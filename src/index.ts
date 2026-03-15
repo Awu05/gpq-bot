@@ -185,9 +185,55 @@ function parseSheetDate(raw: string) {
   return new Date(Date.UTC(year, month - 1, day));
 }
 
+function buildReadableYScale(values: number[]) {
+  if (values.length === 0) {
+    return {
+      beginAtZero: true,
+      ticks: { maxTicksLimit: 8 },
+    };
+  }
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const baseRange = Math.max(1, max - min);
+  const padding = Math.max(5, Math.ceil(baseRange * 0.08));
+  const axisMin = Math.max(0, min - padding);
+  const axisMax = max + padding;
+  const stepSize = niceStepSize((axisMax - axisMin) / 6);
+
+  return {
+    min: axisMin,
+    max: axisMax,
+    ticks: {
+      stepSize,
+      maxTicksLimit: 8,
+    },
+  };
+}
+
+function niceStepSize(rawStep: number) {
+  const step = Math.max(1, rawStep);
+  const exponent = Math.floor(Math.log10(step));
+  const magnitude = 10 ** exponent;
+  const residual = step / magnitude;
+
+  if (residual <= 1) return 1 * magnitude;
+  if (residual <= 2) return 2 * magnitude;
+  if (residual <= 5) return 5 * magnitude;
+  return 10 * magnitude;
+}
+
+function formatScoreLabel(value: unknown) {
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n)) return "";
+  return Math.round(n).toLocaleString("en-US");
+}
+
 async function buildUserProgressChart(username: string, labels: string[], values: number[]) {
+  const yScale = buildReadableYScale(values);
   const chartConfig = {
     type: "bar",
+    plugins: ["chartjs-plugin-datalabels"],
     data: {
       labels,
       datasets: [
@@ -203,16 +249,30 @@ async function buildUserProgressChart(username: string, labels: string[], values
       ],
     },
     options: {
+      layout: {
+        padding: {
+          top: 24,
+        },
+      },
       plugins: {
         title: {
           display: true,
           text: `${username} Culvert Progression`,
         },
         legend: { display: false },
+        datalabels: {
+          display: true,
+          anchor: "end",
+          align: "top",
+          offset: 4,
+          color: "#333333",
+          font: { weight: "bold", size: 11 },
+        },
       },
       scales: {
         y: {
           title: { display: true, text: "Culvert Score" },
+          ...yScale,
         },
         x: {
           title: { display: true, text: "Date" },
@@ -221,7 +281,7 @@ async function buildUserProgressChart(username: string, labels: string[], values
     },
   };
 
-  const chartUrl = `https://quickchart.io/chart?width=1000&height=500&format=png&backgroundColor=white&c=${encodeURIComponent(
+  const chartUrl = `https://quickchart.io/chart?width=1000&height=500&format=png&backgroundColor=white&version=4&c=${encodeURIComponent(
     JSON.stringify(chartConfig),
   )}`;
   const response = await fetch(chartUrl);
@@ -238,8 +298,11 @@ async function buildCompareChart(
   valuesA: Array<number | null>,
   valuesB: Array<number | null>,
 ) {
+  const numericValues = [...valuesA, ...valuesB].filter((v): v is number => v != null);
+  const yScale = buildReadableYScale(numericValues);
   const chartConfig = {
     type: "bar",
+    plugins: ["chartjs-plugin-datalabels"],
     data: {
       labels,
       datasets: [
@@ -260,18 +323,31 @@ async function buildCompareChart(
       ],
     },
     options: {
+      layout: {
+        padding: {
+          top: 24,
+        },
+      },
       plugins: {
         title: { display: true, text: `${userA} vs ${userB} Culvert Progression` },
         legend: { display: true },
+        datalabels: {
+          display: true,
+          anchor: "end",
+          align: "top",
+          offset: 4,
+          color: "#333333",
+          font: { weight: "bold", size: 10 },
+        },
       },
       scales: {
-        y: { title: { display: true, text: "Culvert Score" } },
+        y: { title: { display: true, text: "Culvert Score" }, ...yScale },
         x: { title: { display: true, text: "Date" } },
       },
     },
   };
 
-  const chartUrl = `https://quickchart.io/chart?width=1100&height=550&format=png&backgroundColor=white&c=${encodeURIComponent(
+  const chartUrl = `https://quickchart.io/chart?width=1100&height=550&format=png&backgroundColor=white&version=4&c=${encodeURIComponent(
     JSON.stringify(chartConfig),
   )}`;
   const response = await fetch(chartUrl);
@@ -282,8 +358,10 @@ async function buildCompareChart(
 }
 
 async function buildCumulativeChart(labels: string[], values: number[]) {
+  const yScale = buildReadableYScale(values);
   const chartConfig = {
     type: "bar",
+    plugins: ["chartjs-plugin-datalabels"],
     data: {
       labels,
       datasets: [
@@ -297,18 +375,31 @@ async function buildCumulativeChart(labels: string[], values: number[]) {
       ],
     },
     options: {
+      layout: {
+        padding: {
+          top: 24,
+        },
+      },
       plugins: {
         title: { display: true, text: "Cumulative Weekly Culvert Scores" },
         legend: { display: false },
+        datalabels: {
+          display: true,
+          anchor: "end",
+          align: "top",
+          offset: 4,
+          color: "#333333",
+          font: { weight: "bold", size: 11 },
+        },
       },
       scales: {
-        y: { title: { display: true, text: "Total Score" } },
+        y: { title: { display: true, text: "Total Score" }, ...yScale },
         x: { title: { display: true, text: "Week Date" } },
       },
     },
   };
 
-  const chartUrl = `https://quickchart.io/chart?width=1100&height=550&format=png&backgroundColor=white&c=${encodeURIComponent(
+  const chartUrl = `https://quickchart.io/chart?width=1100&height=550&format=png&backgroundColor=white&version=4&c=${encodeURIComponent(
     JSON.stringify(chartConfig),
   )}`;
   const response = await fetch(chartUrl);
